@@ -1,6 +1,7 @@
 package com.emmanull.ibstest.ui.auth
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -16,6 +17,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.emmanull.ibstest.R
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.KeyboardType
 import com.emmanull.ibstest.navigation.Route
 import com.emmanull.ibstest.ui.components.IbsButton
 import com.emmanull.ibstest.ui.components.IbsTextField
@@ -31,7 +34,7 @@ fun LoginScreenRoute(
 
     LoginScreen(uiState, onNavigate, doLogin = { email, password ->
         viewModel.login(email, password)
-    })
+    }, onSuccess = {viewModel.onSuccessShown()})
 
 }
 
@@ -39,7 +42,8 @@ fun LoginScreenRoute(
 private fun LoginScreen(
     uiState: LoginUiState,
     navigate: (String) -> Unit,
-    doLogin: (String, String) -> Unit
+    doLogin: (String, String) -> Unit,
+    onSuccess: () -> Unit
 ) {
 
     var email by rememberSaveable { mutableStateOf("") }
@@ -47,6 +51,7 @@ private fun LoginScreen(
     var isEmailError by rememberSaveable { mutableStateOf(false) }
     var isPasswordError by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
 
     when (uiState) {
         is LoginUiState.Empty -> {
@@ -55,12 +60,23 @@ private fun LoginScreen(
         is LoginUiState.Error -> {
             isPasswordError = uiState.isPasswordError
             isEmailError = uiState.isEmailError
-            context.shortToast(uiState.message)
+            DisposableEffect(key1 = uiState) {
+                context.shortToast(uiState.message)
+                 onDispose {}
+            }
         }
         is LoginUiState.Success -> {
             isPasswordError = false
             isEmailError = false
-            context.shortToast(uiState.message)
+
+            DisposableEffect(key1 = uiState) {
+                context.shortToast(uiState.message)
+                navigate(Route.HomeRoute.route)
+                onDispose {
+                    onSuccess()
+                }
+            }
+
         }
         is LoginUiState.Loading -> {
 
@@ -71,7 +87,8 @@ private fun LoginScreen(
         modifier = Modifier
             .background(Color.White)
             .fillMaxSize()
-            .padding(32.dp),
+            .padding(32.dp)
+            .clickable { focusManager.clearFocus() },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -99,6 +116,7 @@ private fun LoginScreen(
             onTextChanged = {
                 password = it
             },
+            keyboardType = KeyboardType.Password,
             placeholder = { Text(text = stringResource(R.string.password)) },
             modifier = Modifier
                 .fillMaxWidth()
@@ -109,7 +127,6 @@ private fun LoginScreen(
         IbsButton(
             onClick = {
                 doLogin(email, password)
-                //navigate(Route.HomeRoute.route)
             },
             text = stringResource(id = R.string.login)
         )

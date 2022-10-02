@@ -52,4 +52,8 @@ class LoginViewModel : ViewModel() {
         _uiState.value = LoginUiState.Success("Success!")
     }
 
+    fun onSuccessShown() {
+        _uiState.value = LoginUiState.Empty
+    }
+
 }
