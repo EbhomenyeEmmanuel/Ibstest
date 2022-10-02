@@ -25,6 +25,7 @@ fun IbsTextField(
     isPasswordIconClicked: Boolean = false,
     textColor: Color = Color.Black,
     placeholder: @Composable (() -> Unit)? = null,
+    isError: Boolean = false
 ) {
     val textValue = remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
@@ -45,6 +46,7 @@ fun IbsTextField(
             backgroundColor = LightPrimaryColor,
             errorBorderColor = Color.Red
         ),
+        isError = isError,
         visualTransformation = visualTransformation,
         keyboardOptions = KeyboardOptions.Default.copy(
             keyboardType
