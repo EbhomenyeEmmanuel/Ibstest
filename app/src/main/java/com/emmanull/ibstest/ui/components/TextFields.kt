@@ -20,6 +20,7 @@ import com.emmanull.ibstest.ui.theme.LightPrimaryColor
 fun IbsTextField(
     modifier: Modifier = Modifier,
     onTextChanged: (String) -> Unit,
+    onKeyboardOptionsDone: (() -> Unit?)? = null,
     keyboardType: KeyboardType = KeyboardType.Text,
     endIcon: @Composable (() -> Unit)? = null,
     isPasswordIconClicked: Boolean = false,
@@ -59,7 +60,10 @@ fun IbsTextField(
             onTextChanged(valueChanged)
         },
         trailingIcon = endIcon,
-        keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+        keyboardActions = KeyboardActions(onDone = {
+            onKeyboardOptionsDone?.invoke()
+            focusManager.clearFocus()
+        }),
         placeholder = placeholder
     )
 }
