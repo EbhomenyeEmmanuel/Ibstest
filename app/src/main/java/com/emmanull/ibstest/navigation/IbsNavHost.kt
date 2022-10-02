@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.emmanull.ibstest.ui.auth.LoginScreenRoute
+import com.emmanull.ibstest.ui.home.HomeScreenRoute
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -29,5 +30,10 @@ fun IbsNavHost(
             })
         }
 
+        composable(Route.HomeRoute.route) {
+            HomeScreenRoute(onNavigate = {
+                navController.navigate(it)
+            })
+        }
     }
 }
