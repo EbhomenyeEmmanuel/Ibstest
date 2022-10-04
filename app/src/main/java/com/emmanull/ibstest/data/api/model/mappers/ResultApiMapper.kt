@@ -11,7 +11,7 @@ class ResultApiMapper : ApiMapper<ApiResults, HomeItem> {
                 name = "${name?.title ?: ""} ${name?.first ?: ""} ${name?.last ?: ""}",
                 phone = phone ?: "",
                 email = email ?: "",
-                icon = picture?.thumbNail ?: ""
+                icon = picture?.medium ?: ""
             )
         }
     }
