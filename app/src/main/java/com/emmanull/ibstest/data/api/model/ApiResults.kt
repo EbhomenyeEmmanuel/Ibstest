@@ -7,7 +7,7 @@ class ApiObj(
 data class ApiResults(
     val name: ApiResultsName?,
     val phone: String?,
-    val cell: String?,
+    val email: String?,
     val picture: ApiResultsPicture?,
     val id: ApiResultsId?
 )
