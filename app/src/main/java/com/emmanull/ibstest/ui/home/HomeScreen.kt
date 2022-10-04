@@ -30,6 +30,7 @@ import com.emmanull.ibstest.domain.model.HomeUiState
 import com.emmanull.ibstest.navigation.Route
 import com.emmanull.ibstest.ui.components.IbsTextField
 import com.emmanull.ibstest.utils.shortToast
+import com.skydoves.landscapist.glide.GlideImage
 
 @OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
@@ -129,8 +130,20 @@ private fun HomeContentItem(homeItem: HomeItem) {
                 modifier = Modifier
                     .size(60.dp)
                     .clip(CircleShape)
-                    .background(Color.Blue),
-            ) {}
+            ) {
+
+                GlideImage(
+                    imageModel = icon,
+                    loading = {
+                        CircularProgressIndicator()
+                    },
+                    failure = {
+                        CircularProgressIndicator(
+                            color = Color.Red,
+                        )
+                    }
+                )
+            }
 
             Spacer(modifier = Modifier.width(5.dp))
 
