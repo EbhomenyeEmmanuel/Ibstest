@@ -10,15 +10,13 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -29,7 +27,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.emmanull.ibstest.R
 import com.emmanull.ibstest.domain.model.HomeUiState
+import com.emmanull.ibstest.navigation.Route
 import com.emmanull.ibstest.ui.components.IbsTextField
+import com.emmanull.ibstest.utils.shortToast
 
 @OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
@@ -39,22 +39,39 @@ fun HomeScreenRoute(
 ) {
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
 
-    HomeScreen(uiState) {
-        homeViewModel.onSearchHomeItems()
-    }
+    HomeScreen(uiState, onSearch = {}, onNavigate = {
+        onNavigate(it)
+        homeViewModel.onErrorShown()
+    })
 
 }
 
 @Composable
-private fun HomeScreen(homeUiState: HomeUiState, onSearch: (String) -> Unit) {
+private fun HomeScreen(
+    homeUiState: HomeUiState,
+    onSearch: (String) -> Unit,
+    onNavigate: (String) -> Unit
+) {
     val focusManager = LocalFocusManager.current
     var searchKey by rememberSaveable { mutableStateOf("") }
+    val context = LocalContext.current
+
+    homeUiState.errorMessage?.let {
+        DisposableEffect(key1 = it) {
+            context.shortToast(it)
+            onNavigate(Route.LoginRoute.route)
+            onDispose {
+            }
+        }
+    }
 
     if (homeUiState.isLoading) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-            CircularProgressIndicator(modifier = Modifier
-                .size(50.dp)
-                .fillMaxSize())
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .size(50.dp)
+                    .fillMaxSize()
+            )
         }
     } else {
         LazyColumn(
