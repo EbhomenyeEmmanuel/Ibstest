@@ -15,26 +15,32 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.emmanull.ibstest.R
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.emmanull.ibstest.domain.model.LoginUiState
 import com.emmanull.ibstest.navigation.Route
 import com.emmanull.ibstest.ui.components.IbsButton
 import com.emmanull.ibstest.ui.components.IbsTextField
 import com.emmanull.ibstest.utils.shortToast
 
+@OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 fun LoginScreenRoute(
     onNavigate: (String) -> Unit,
     viewModel: LoginViewModel = viewModel(
     )
 ) {
-    val uiState by viewModel.loginUiState.collectAsState()
+    val uiState by viewModel.loginUiState.collectAsStateWithLifecycle()
 
-    LoginScreen(uiState, onNavigate, doLogin = { email, password ->
-        viewModel.login(email, password)
-    }, onSuccess = {viewModel.onSuccessShown()})
+    LoginScreen(
+        uiState, onNavigate, doLogin = { email, password ->
+            viewModel.login(email, password)
+        }, onSuccess =
+        viewModel::onSuccessShown
+    )
 
 }
 
@@ -48,89 +54,93 @@ private fun LoginScreen(
 
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
-    var isEmailError by rememberSaveable { mutableStateOf(false) }
-    var isPasswordError by rememberSaveable { mutableStateOf(false) }
-    val context = LocalContext.current
-    val focusManager = LocalFocusManager.current
 
-    when (uiState) {
-        is LoginUiState.Empty -> {
-
+    DisposableEffect(key1 = uiState) {
+        if (uiState.emailErrorMessage?.isEmpty() == true && uiState.passwordErrorMessage?.isEmpty() == true
+            && !uiState.isEmailError && !uiState.isPasswordError
+        ) {
+            navigate(Route.HomeRoute.route)
+            onSuccess()
         }
-        is LoginUiState.Error -> {
-            isPasswordError = uiState.isPasswordError
-            isEmailError = uiState.isEmailError
-            DisposableEffect(key1 = uiState) {
-                context.shortToast(uiState.message)
-                 onDispose {}
-            }
-        }
-        is LoginUiState.Success -> {
-            isPasswordError = false
-            isEmailError = false
-
-            DisposableEffect(key1 = uiState) {
-                context.shortToast(uiState.message)
-                navigate(Route.HomeRoute.route)
-                onDispose {
-                    onSuccess()
-                }
-            }
-
-        }
-        is LoginUiState.Loading -> {
-
+        onDispose {
         }
     }
 
-    Column(
-        modifier = Modifier
-            .background(Color.White)
-            .fillMaxSize()
-            .padding(32.dp)
-            .clickable { focusManager.clearFocus() },
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-
-        Text(
-            text = stringResource(id = R.string.login),
-            style = MaterialTheme.typography.h6,
-            textAlign = TextAlign.Center,
-            color = Color.Black,
+    with(uiState) {
+        Column(
             modifier = Modifier
-                .wrapContentSize()
-                .padding(bottom = 32.dp)
-        )
+                .background(Color.White)
+                .fillMaxSize()
+                .padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
 
-        IbsTextField(
-            onTextChanged = { email = it },
-            placeholder = { Text(text = stringResource(R.string.email)) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 20.dp, bottom = 20.dp),
-            isError = isEmailError
-        )
+            Text(
+                text = stringResource(id = R.string.login),
+                style = MaterialTheme.typography.h6,
+                textAlign = TextAlign.Center,
+                color = Color.Black,
+                modifier = Modifier
+                    .wrapContentSize()
+                    .padding(bottom = 32.dp)
+            )
 
-        IbsTextField(
-            onTextChanged = {
-                password = it
-            },
-            keyboardType = KeyboardType.Password,
-            placeholder = { Text(text = stringResource(R.string.password)) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 20.dp),
-            isError = isPasswordError
-        )
+            IbsTextField(
+                onTextChanged = { email = it },
+                placeholder = { Text(text = stringResource(R.string.email)) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 20.dp),
+                isError = isEmailError
+            )
 
-        IbsButton(
-            onClick = {
-                doLogin(email, password)
-            },
-            text = stringResource(id = R.string.login)
-        )
+            if (emailErrorMessage?.isNotEmpty() == true) {
+                Text(
+                    text = emailErrorMessage,
+                    style = MaterialTheme.typography.caption,
+                    textAlign = TextAlign.Start,
+                    color = Color.Red,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp),
+                )
+            }
 
+            IbsTextField(
+                onTextChanged = {
+                    password = it
+                },
+                keyboardType = KeyboardType.Password,
+                placeholder = { Text(text = stringResource(R.string.password)) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 20.dp),
+                isError = isPasswordError
+            )
+
+            if (passwordErrorMessage?.isNotEmpty() == true) {
+                Text(
+                    text = passwordErrorMessage,
+                    style = MaterialTheme.typography.caption,
+                    textAlign = TextAlign.Start,
+                    color = Color.Red,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp),
+                )
+            }
+
+            IbsButton(
+                onClick = {
+                    doLogin(email, password)
+                },
+                text = stringResource(id = R.string.login),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 20.dp),
+            )
+
+        }
     }
 }
 

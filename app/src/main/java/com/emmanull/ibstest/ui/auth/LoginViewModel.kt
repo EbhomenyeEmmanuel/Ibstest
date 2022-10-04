@@ -1,59 +1,62 @@
 package com.emmanull.ibstest.ui.auth
 
 import androidx.lifecycle.ViewModel
+import com.emmanull.ibstest.domain.model.LoginUiState
 import com.emmanull.ibstest.utils.isEmailValid
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-
-sealed interface LoginUiState {
-    object Empty : LoginUiState
-
-    object Loading : LoginUiState
-
-    data class Success(val message: String) : LoginUiState
-
-    data class Error(
-        val isEmailError: Boolean = false,
-        val message: String = "",
-        val isPasswordError: Boolean = false,
-    ) : LoginUiState
-}
-
+import kotlinx.coroutines.flow.update
 
 class LoginViewModel : ViewModel() {
     private val TAG = javaClass.simpleName
-    private val _uiState: MutableStateFlow<LoginUiState> =
-        MutableStateFlow(LoginUiState.Empty)
-    val loginUiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
+    private val _uiState =
+        MutableStateFlow(LoginUiState())
+    val loginUiState: StateFlow<LoginUiState> = _uiState
 
     fun login(email: String, password: String) {
-        _uiState.value = LoginUiState.Loading
+        //_uiState.update { it.copy(isLoading = true) }
 
         if (email.isEmpty() || !email.isEmailValid()) {
-            _uiState.value = LoginUiState.Error(
-                isEmailError = true,
-                isPasswordError = false,
-                message = "Invalid Email"
-            )
-            return
-        }
-
-        if (password.isEmpty() || password.length < 6) {
-            _uiState.value =
-                LoginUiState.Error(
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    isEmailError = true,
+                    isPasswordError = false,
+                    emailErrorMessage = "Invalid email format",
+                    passwordErrorMessage = ""
+                )
+            }
+        } else if (password.isEmpty() || password.length < 6) {
+            _uiState.update {
+                it.copy(
                     isPasswordError = true,
                     isEmailError = false,
-                    message = "Invalid Password"
+                    passwordErrorMessage = "Invalid password format",
+                    emailErrorMessage = "",
                 )
-            return
+            }
+        } else {
+            _uiState.update {
+                it.copy(
+                    isEmailError = false,
+                    isPasswordError = false,
+                    emailErrorMessage = "",
+                    passwordErrorMessage = ""
+                )
+            }
         }
-
-        _uiState.value = LoginUiState.Success("Success!")
     }
 
     fun onSuccessShown() {
-        _uiState.value = LoginUiState.Empty
+        _uiState.update {
+            it.copy(
+                isEmailError = false,
+                isPasswordError = false,
+                isLoading = false,
+                emailErrorMessage = "",
+                passwordErrorMessage = ""
+            )
+        }
     }
 
 }
