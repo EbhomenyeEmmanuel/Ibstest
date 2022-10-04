@@ -9,8 +9,8 @@ class ResultApiMapper : ApiMapper<ApiResults, HomeItem> {
             HomeItem(
                 id = id?.value ?: "",
                 name = "${name?.title ?: ""} ${name?.first ?: ""} ${name?.last ?: ""}",
-                accountNumber = phone ?: "",
-                phone = cell ?: "",
+                phone = phone ?: "",
+                email = email ?: "",
                 icon = picture?.thumbNail ?: ""
             )
         }

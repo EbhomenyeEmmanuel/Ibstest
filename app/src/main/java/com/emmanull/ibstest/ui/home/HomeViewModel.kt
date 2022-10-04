@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 class HomeItem(
     val id: String,
     val name: String,
-    val accountNumber: String,
+    val email: String,
     val phone: String,
     val icon: String,
 )

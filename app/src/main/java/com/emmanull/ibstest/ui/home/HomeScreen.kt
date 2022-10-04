@@ -150,7 +150,7 @@ private fun HomeContentItem(homeItem: HomeItem) {
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "Account No. $accountNumber",
+                    text = "Email No. $email",
                     style = MaterialTheme.typography.body1,
                     textAlign = TextAlign.Start,
                     color = Color.Black,
