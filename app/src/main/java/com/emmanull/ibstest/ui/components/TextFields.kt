@@ -1,5 +1,6 @@
 package com.emmanull.ibstest.ui.components
 
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.OutlinedTextField
@@ -38,6 +39,7 @@ fun IbsTextField(
 
     OutlinedTextField(
         modifier = modifier,
+        shape = RoundedCornerShape(20),
         colors = TextFieldDefaults.outlinedTextFieldColors(
             disabledBorderColor = LightPrimaryColor,
             textColor = textColor,
