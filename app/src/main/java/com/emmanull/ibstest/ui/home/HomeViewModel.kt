@@ -2,25 +2,28 @@ package com.emmanull.ibstest.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.emmanull.ibstest.data.di.ServiceLocator
+import com.emmanull.ibstest.App.Companion.serviceLocator
 import com.emmanull.ibstest.domain.model.HomeUiState
-import com.emmanull.ibstest.domain.model.LoginUiState
 import com.emmanull.ibstest.domain.repositories.HomeRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class HomeItem(
-    val id: Int,
+    val id: String,
     val name: String,
     val accountNumber: String,
     val phone: String,
-    val icon: Int = 0,
+    val icon: String,
 )
 
-class HomeViewModel: ViewModel() {
+class HomeViewModel(
+    private val homeRepository: HomeRepository = serviceLocator.provideHomeRepository(),
+ ) :
+    ViewModel() {
 
     private val _uiState =
         MutableStateFlow(HomeUiState())
@@ -33,14 +36,9 @@ class HomeViewModel: ViewModel() {
     fun onSearchHomeItems() {
         viewModelScope.launch {
             delay(2000)
-            _uiState.update { it.copy(isLoading = false, homeList = homeList) }
+            homeRepository.getListDetails().catch { }.collect { list ->
+                _uiState.update { it.copy(isLoading = false, homeList = list) }
+            }
         }
     }
-
-    val homeList
-        get() = listOf<HomeItem>(
-            HomeItem(0, "Vitol Services Limited", "12345", "900009"),
-            HomeItem(1, "Vitol Services Limited2", "12345", "900009"),
-        )
-
 }
