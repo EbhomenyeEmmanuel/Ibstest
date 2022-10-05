@@ -40,7 +40,7 @@ fun HomeScreenRoute(
 ) {
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
 
-    HomeScreen(uiState, onSearch = {}, onNavigate = {
+    HomeScreen(uiState, onSearch = { homeViewModel.search(it) }, onNavigate = {
         onNavigate(it)
         homeViewModel.onErrorShown()
     })
@@ -60,6 +60,7 @@ private fun HomeScreen(
     homeUiState.errorMessage?.let {
         DisposableEffect(key1 = it) {
             context.shortToast(it)
+            //Chose to navigate when error message is shown because list is in memory not cached
             onNavigate(Route.LoginRoute.route)
             onDispose {
             }
@@ -74,7 +75,7 @@ private fun HomeScreen(
                     .fillMaxSize()
             )
         }
-    } else {
+    } else if (homeUiState.homeList?.isEmpty() == false) {
         LazyColumn(
             modifier = Modifier
                 .background(Color.White)
@@ -100,7 +101,10 @@ private fun HomeScreen(
 
             item {
                 IbsTextField(
-                    onTextChanged = { searchKey = it },
+                    onTextChanged = {
+                        searchKey = it
+                        onSearch(it)
+                    },
                     placeholder = { Text(text = stringResource(R.string.search_hint)) },
                     modifier = Modifier
                         .fillMaxWidth()
