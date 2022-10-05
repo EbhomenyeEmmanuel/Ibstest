@@ -17,8 +17,7 @@ class HomeRepositoryImpl(
     private val resultApiMapper: ResultApiMapper = ResultApiMapper()
 ) : HomeRepository {
     override suspend fun getListDetails(): Flow<List<HomeItem>> {
-        try {
-
+        return flow {
             val response = withContext(Dispatchers.IO) {
                 val deferreds = listOf(
                     async {
@@ -28,22 +27,15 @@ class HomeRepositoryImpl(
                         apiService.getResults()
                     },
                     async {
-                         apiService.getResults()
+                        apiService.getResults()
                     })
                 deferreds.awaitAll()
             }
-
-            return flow {
-                emit(response.flatMap { items ->
-                    items.results?.map {
-                        resultApiMapper.mapToDomain(it)
-                    } as List<HomeItem>
-                })
-            }
-        } catch (e: Exception) {
-            return flow {
-                e
-            }
+            emit(response.flatMap { items ->
+                items.results?.map {
+                    resultApiMapper.mapToDomain(it)
+                } as List<HomeItem>
+            })
         }
     }
 }
